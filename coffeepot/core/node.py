@@ -6,17 +6,24 @@ class _Node(object):
     Foundation Class for all nodes.  All should inherit from this.
     '''
 
-    def __init__(self, name)
+    def __init__(self, name):
         self.name = name
         self.reset_cache()
-
-    def add_node(self, node):
-        self.cache.append( node )
+        
+    def __str__(self):
+        '''
+        Added this built-in so the code can be generated when called by a
+        formatted string.
+        '''
+        return self.render()
         
     def reset_cache(self):
         self.cache = []
         
     def render(self):
+        '''
+        Render method generates the JavaScript code for the node.
+        '''
         if not self.cache:
             return ""
 
@@ -28,7 +35,7 @@ class _MethodNode(object):
     
     These are created by other nodes and should not be instanced directly.
     '''
-    def __init__(self, name, args=[], kwargs={} )
+    def __init__(self, name, args=[], kwargs={} ):
         self.name = name
         self.args = args
         self.kwargs = kwargs
@@ -44,9 +51,6 @@ class CompoundNode(_Node):
     generated will have chained methods.
     '''
 
-    def add_node(self, node):
-        raise NotImplementedError("function add_node not implemented")
-    
     def add_method(self, name, args=[], kwargs={}):
         self.cache.append( _MethodNode(name, args, kwargs) )
 
@@ -118,6 +122,7 @@ class FunctionNode(_Node):
 
 try:
     from django.template.loader import get_template
+    from django.template import Context, Template
 
     class TemplateNode( _Node ):
         '''
@@ -131,18 +136,49 @@ try:
             self.context = context
             self.add_template( template, self.context )
 
-        def add_node(self, node):
-            raise NotImplementedError("function add_node not implemented")
-
-        def add_template(self, template, context={} ):
-            if template.__class__.__name__ in ['str']:
-                self.cache.append( Template( template ) )
+        @property
+        def context(self):
+            return self._context
+            
+        @context.setter
+        def context(self, value):
+            if isinstance(value, Context):
+                self._context = value
             else:
-                self.cache.append( get_template( template ) )
+                self._context = Context( value )
 
-        def render(self):
+        @context.deleter
+        def context(self, value):
+            del self._context
+
+        def add_template_path(self, template):
+            '''
+            add_template_path adds a Template Object to the render cache of the TemplateNode.
+            It's a convenience method that will take a path to a template and use the
+            appropriate template.
+            '''
+            self.add_template_object( get_template( template ) )
+
+        def add_template_string(self, templateString):
+            '''
+            Similar to add_template except the input is a string.  This string will be 
+            converted into a Django template and rendered with the Node's context
+            '''
+            self.add_template_object( Template( templateString ) )
+
+        def add_template_object(self, templateObject):
+            '''
+            Similar to add_template except the input is a Django Template Object.  
+            This will be added to cache and rendered with the Node's context
+            '''
+            self.cache.append( templateObject )
+
+        def render(self, context={}):
             if not self.cache:
                 return ""
+            
+            if not self.context:
+                self.context = context
                 
             return '\n'.join( [t.render( self.context ) for t in self.cache] )
 

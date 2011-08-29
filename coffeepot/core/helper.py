@@ -49,13 +49,13 @@ def arg_string_for_js(args, kwargs, indent=None):
 
 
 def convertValue(value):
-    if value.__class__.__name__ in ['bool']:                          # Convert Boolean capitalization
+    if isinstance( value, bool ):                           # Convert Boolean capitalization
         return str(value).lower()
-    elif value.__class__.__name__ in ['int']:              # Values that should not be in quotes
+    elif isinstance( value, int ):                          # Values that should not be in quotes
         return value
-    elif value.__class__.__name__ in ['dict']:              # Values that should not be in quotes
+    elif isinstance( value, dict ):                         # Values that should not be in quotes
         return arg_string_for_js( [], value )
-    elif value.__class__.__name__ in ['list', 'tuple']:              # Values that should not be in quotes
+    elif isinstance( value, list ) or isinstance( value, tuple ):              # Values that should not be in quotes
         return '[%s]' % arg_string_for_js( value, {} )
-    else:                                                       # Everything else
+    else:                                                   # Everything else
         return '"%s"' % value

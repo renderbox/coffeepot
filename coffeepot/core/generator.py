@@ -1,6 +1,6 @@
-from coffeepot.core.node import 
+from coffeepot.core.node import FunctionNode
 
-class CoreGenerator(object):
+class _CoreGenerator(object):
     def __init__(self):
         #super(object, self).__init__()
         self.reset_cache()
@@ -22,20 +22,19 @@ class CoreGenerator(object):
         return ";\n".join( [x.render() for x in self.cache] ) + ";"
 
 
-
 try:
     from coffeepot.core.node import TemplateNode
     from django.http import HttpResponse
 
-    class DjangoGenerator( CoreGenerator ):
+    class _DjangoGenerator( _CoreGenerator ):
         def render_to_response(self, content_type="text/javascript"):
             return HttpResponse(self.render(), content_type=content_type)
 
         def template_node(self, template, context={}):
             return self.add_node( TemplateNode( template, context ) )
 
-    Generator = DjangoGenerator
+    Generator = _DjangoGenerator
         
 except ImportError:     #If it does not exist we are OK not adding the method
-    Generator = GeneratorNode
+    Generator = _CoreGenerator
         
