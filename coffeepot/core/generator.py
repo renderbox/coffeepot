@@ -1,3 +1,4 @@
+import coffeepot
 from coffeepot.core.node import FunctionNode
 
 class _CoreGenerator(object):
@@ -22,7 +23,7 @@ class _CoreGenerator(object):
         return ";\n".join( [x.render() for x in self.cache] ) + ";"
 
 
-try:
+if coffeepot.FRAMEWORK in ['django']:
     from coffeepot.core.node import TemplateNode
     from django.http import HttpResponse
 
@@ -35,6 +36,5 @@ try:
 
     Generator = _DjangoGenerator
         
-except ImportError:     #If it does not exist we are OK not adding the method
+else:     #If it does not exist we are OK not adding the method
     Generator = _CoreGenerator
-        

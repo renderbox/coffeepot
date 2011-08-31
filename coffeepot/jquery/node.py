@@ -1,3 +1,4 @@
+"""
 from pyjax.core.exception import JSLibraryError
 from pyjax.core.node import CoreNode, ScriptNode, AlertNode, FunctionNode, Generator
 
@@ -6,8 +7,8 @@ try:
 except ImportError:
     pass
 
-class JQueryNode(CoreNode):
-    '''Generates visual effect code in Javascript'''
+class JQueryNode( CoreNode ):
+    '''Generates Javascript'''
 
     def add_node(self, node):
         self.cache.append( node )
@@ -28,3 +29,4 @@ methodList = ['click', 'show', 'hide', 'append', 'before', 'after', 'prepend', '
 
 for m in methodList:
     setattr( JQueryNode, m, make_method(m) )
+"""

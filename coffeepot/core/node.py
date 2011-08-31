@@ -1,7 +1,8 @@
+import coffeepot
 from coffeepot.core.exception import JSLibraryError
 from coffeepot.core.helper import arg_string_for_js
 
-class _Node(object):
+class CoreNode(object):
     '''
     Foundation Class for all nodes.  All should inherit from this.
     '''
@@ -30,7 +31,7 @@ class _Node(object):
 
 class _MethodNode(object):
     '''
-    This is a representation of a method in JavaScript.  This are rendered
+    This is a representation of a method in JavaScript.  These are rendered
     building blocks for properly formatting python args into JS args. 
     
     These are created by other nodes and should not be instanced directly.
@@ -44,11 +45,14 @@ class _MethodNode(object):
         return '%s(%s)' % (self.name, arg_string_for_js(self.args, self.kwargs) )
 
 
-class CompoundNode(_Node):
+class CompoundNode( CoreNode ):
     '''
     A Compound node is the equivalent of one line of JavaScript.  You can
     chain method calls with this type of node and as a result, the JavaScript
     generated will have chained methods.
+    
+    JQuery Example:
+        $('foo').hide().fadeIn().fadeOut()
     '''
 
     def add_method(self, name, args=[], kwargs={}):
@@ -86,7 +90,7 @@ class AlertNode(object):
         return 'alert("%s")' % self.alert
 
 
-class FunctionNode(_Node):
+class FunctionNode( CoreNode ):
     '''
     This is a special kind of Node that takes a list of Nodes that allows you
     to encapsulate several lines of code into a single function.
@@ -120,11 +124,11 @@ class FunctionNode(_Node):
 #   'Django patch' the classes if the django libraries are installed
 #
 
-try:
+if coffeepot.FRAMEWORK in ['django']:
     from django.template.loader import get_template
     from django.template import Context, Template
 
-    class TemplateNode( _Node ):
+    class TemplateNode( CoreNode ):
         '''
         A Script node is one that assumes you are giving it the proper JavaScript.
         It does not try to generate JavaScript of it's own but instead provide a 
@@ -181,6 +185,3 @@ try:
                 self.context = context
                 
             return '\n'.join( [t.render( self.context ) for t in self.cache] )
-
-except ImportError:     #If it does not exist we are OK not adding the method
-    pass
