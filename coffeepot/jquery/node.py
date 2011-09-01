@@ -11,7 +11,7 @@ class JQueryNode( CoreNode ):
     '''Generates Javascript'''
 
     def add_node(self, node):
-        self.cache.append( node )
+        self.queue.append( node )
 
     def function(self, name=None, indent=None):
         result = FunctionNode(name, indent)

@@ -1,26 +1,39 @@
 import coffeepot
-from coffeepot.core.node import FunctionNode
+from coffeepot.core.node import FunctionNode, ScriptNode
 
 class _CoreGenerator(object):
     def __init__(self):
         #super(object, self).__init__()
-        self.reset_cache()
+        self.reset_queue()
 
     def add_node(self, node):
-        self.cache.append( node )
+        self.queue.append( node )
         return node
 
-    def reset_cache(self):
-        self.cache = []
-
-    def function(self, name=None, indent=None):
-        return self.add_node( FunctionNode(name, indent) )
-
+    def reset_queue(self):
+        self.queue = []
+        
     def render(self):
-        if not self.cache:
+        if not self.queue:
             return ""
         
-        return ";\n".join( [x.render() for x in self.cache] ) + ";"
+        return ";\n".join( [x.render() for x in self.queue] ) + ";"
+
+    # CONVIENENCE FUNCTIONS
+    def function(self, name=None, indent=None):
+        '''
+        Returns a Function node object
+        '''
+        return FunctionNode(name, indent)
+
+    def add_function(self, name=None, indent=None):
+        '''
+        Creates a Function Node object and Adds it to the Queue.
+        '''
+        return self.add_node( self.function(name, indent) )
+
+    def add_script(self, text):
+        return self.add_node( ScriptNode(text) )
 
 
 if coffeepot.FRAMEWORK in ['django']:
