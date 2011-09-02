@@ -174,7 +174,7 @@ class ElementNode( _Node ):
 if coffeepot.JSLIB in ['jquery']:
     def make_method(m):
         def temp(self, *args, **kwargs):
-            self.addMethod(m, args, kwargs)
+            self.add_method(m, args, kwargs)
             return self
         return temp
     
