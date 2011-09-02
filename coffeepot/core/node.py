@@ -7,10 +7,11 @@ class _Node(object):
     Foundation Class for all nodes.  All should inherit from this.
     '''
 
-    def __init__(self, name=None, *args, **kwargs):
+    def __init__(self, name=None, indent=0, *args, **kwargs):
         self.name = name
         self.args = args
         self.kwargs = kwargs
+        self.indent = indent
         self.reset_queue()
         
     def __str__(self):
@@ -51,7 +52,7 @@ class _MethodNode(_Node):
     '''
 
     def render(self):
-        return '%s(%s)' % (self.name, arg_string_for_js(self.args, self.kwargs) )
+        return '%s(%s)' % (self.name, arg_string_for_js( *self.args, **self.kwargs) )
 
 
 class _GeneratorNode(_Node):
@@ -68,26 +69,26 @@ class _GeneratorNode(_Node):
         return ";\n".join( [x.render() for x in self.queue] ) + ";"
 
     # CONVIENENCE FUNCTIONS
-    def function(self, name=None, indent=None):
+    def function(self, *args, **kwargs):
         '''
         Returns a Function Node Object and returns it.
         '''
-        return FunctionNode(name, indent)
+        return FunctionNode(*args, **kwargs)
 
-    def add_function(self, name=None, indent=None):
+    def add_function(self, *args, **kwargs):
         '''
         Creates a Function Node object and Adds it to the Queue.
         '''
-        return self.add_to_queue( self.function(name, indent) )
+        return self.add_to_queue( self.function(*args, **kwargs) )
 
-    def script(self, text):
+    def script(self, *args, **kwargs):
         '''
         Creates a Script Node Object and returns it.
         '''
-        return ScriptNode(text)
+        return ScriptNode(*args, **kwargs)
 
-    def add_script(self, text):
-        return self.add_to_queue( self.script(text) )
+    def add_script(self, *args, **kwargs):
+        return self.add_to_queue( self.script(*args, **kwargs) )
 
     def add_element(self, name, *args, **kwargs):
         return self.add_to_queue( ElementNode(name, *args, **kwargs) )

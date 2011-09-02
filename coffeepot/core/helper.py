@@ -1,4 +1,4 @@
-def arg_string_for_js(args, kwargs, indent=None):
+def arg_string_for_js(*args, **kwargs):
     '''
     Formats a dictionary into a string for JavaScript functions to work with.
     It's different from the JSON Parser in that the key values are not put
@@ -22,28 +22,23 @@ def arg_string_for_js(args, kwargs, indent=None):
         bool:true,
         number:1}
     '''
-    argList = []
-    kwArgList = []
+    #kwArgList = []
     sep = ", "
+    kwsep = sep
     result = ""
 
-    if indent:
-        sep = ",\n%s" % (indent * " ")
-    
-    for entry in args:
-        argList.append( convertValue(entry) )
+    if 'indent' in kwargs:
+        sep = ",\n%s" % (kwargs['indent'] * " ")
+        kwsep = sep + "  "
+        del( kwargs['indent'] )
+            
+    if args:
+        result = sep.join([ convertValue(x) for x in args ])
     
     if kwargs:
-        for k, v in jsOpts.items():
-            kwArgList.append( '%s:%s' % ( k, convertValue(v) ) )
-            
-    if argList:
-        result = sep.join(argList)
-    
-    if kwArgList:
-        if argList:
+        if args:
             result += sep
-        result += "{ %s }" % sep.join(kwArgList)
+        result += "{ %s }" % kwsep.join([ '%s:%s' % ( k, convertValue(v) ) for k, v in kwargs.items() ])
     
     return result
 
