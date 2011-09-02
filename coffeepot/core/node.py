@@ -144,7 +144,12 @@ class FunctionNode( _GeneratorNode ):
             result += "function() { "
 
         result += sep.join([x.render() for x in self.queue])
-        result +=  "; }"
+        
+        if self.queue:
+            result +=  "; }"
+        else:
+            result +=  "}"
+            
         return result
         
 
