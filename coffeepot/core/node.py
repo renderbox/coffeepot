@@ -7,11 +7,14 @@ class _Node(object):
     Foundation Class for all nodes.  All should inherit from this.
     '''
 
-    def __init__(self, name=None, indent=0, *args, **kwargs):
-        self.name = name
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.get('name', None)
+        self.indent = kwargs.get('indent', 0)
         self.args = args
         self.kwargs = kwargs
-        self.indent = indent
+        
+        #self.print_args()
+        
         self.reset_queue()
         
     def __str__(self):
@@ -41,6 +44,13 @@ class _Node(object):
         '''
         if not self.queue:
             return ""
+            
+    def print_args(self):
+        print "\nSETTING FOR: %s" % self.__class__.__name__
+        print "ARGS"
+        print self.args
+        print "KWARGS"
+        print self.kwargs
 
 
 class _MethodNode(_Node):
@@ -51,7 +61,18 @@ class _MethodNode(_Node):
     These are created by other nodes and should not be instanced directly.
     '''
 
+    def __init__(self, *args, **kwargs):
+        self.reset_queue()
+        self.name = kwargs.pop('name', None)
+        self.args = args
+        self.kwargs = kwargs
+
+        self.print_args()
+
     def render(self):
+        if not self.name:
+            raise JSLibraryError('Can not create unnamed function')
+            
         return '%s(%s)' % (self.name, arg_string_for_js( *self.args, **self.kwargs) )
 
 
@@ -69,29 +90,32 @@ class _GeneratorNode(_Node):
         return ";\n".join( [x.render() for x in self.queue] ) + ";"
 
     # CONVIENENCE FUNCTIONS
-    def function(self, *args, **kwargs):
+    def function(self, name=None, indent=0):
         '''
         Returns a Function Node Object and returns it.
         '''
-        return FunctionNode(*args, **kwargs)
+        return FunctionNode(name=name, indent=indent)
 
-    def add_function(self, *args, **kwargs):
+    def add_function(self, name=None, indent=0):
         '''
         Creates a Function Node object and Adds it to the Queue.
         '''
-        return self.add_to_queue( self.function(*args, **kwargs) )
+        return self.add_to_queue( self.function(name=name, indent=indent) )
 
-    def script(self, *args, **kwargs):
+    def script(self, script):
         '''
         Creates a Script Node Object and returns it.
         '''
-        return ScriptNode(*args, **kwargs)
+        return ScriptNode(script)
 
-    def add_script(self, *args, **kwargs):
-        return self.add_to_queue( self.script(*args, **kwargs) )
+    def add_script(self, script):
+        return self.add_to_queue( self.script(script) )
 
-    def add_element(self, name, *args, **kwargs):
-        return self.add_to_queue( ElementNode(name, *args, **kwargs) )
+    def element(self, name):
+        return ElementNode(name)
+
+    def add_element(self, name):
+        return self.add_to_queue( self.element(name) )
 
 
 class ScriptNode(object):
@@ -101,11 +125,11 @@ class ScriptNode(object):
     place to add whatever you want.  This was created so it can be inserted
     into a Generator chain like other nodes.
     '''
-    def __init__(self, text):
-        self.text = text
+    def __init__(self, script):
+        self.script = script
 
     def render(self):
-        return self.text
+        return self.script
 
 
 class AlertNode(object):
@@ -128,8 +152,8 @@ class FunctionNode( _GeneratorNode ):
     separating commands.
     '''
 
-    def __init__(self, name=None, indent=None, *args, **kwargs):
-        super(FunctionNode, self).__init__(name, *args, **kwargs)
+    def __init__(self, name=None, indent=None):
+        super(FunctionNode, self).__init__(name=name)
         self.indent = indent
 
     def render(self):
@@ -166,8 +190,23 @@ class ElementNode( _Node ):
         $('#foo').hide().fadeIn().fadeOut()
     '''
 
-    def add_method(self, name, args=[], kwargs={}):
-        self.queue.append( _MethodNode(name, args, kwargs) )
+    def __init__(self, name):
+        super(ElementNode, self).__init__(name=name)
+
+    #def add_method(self, name, args=[], kwargs={}):
+    #    self.queue.append( _MethodNode(name, args, kwargs) )
+    def add_method(self, *args, **kwargs):
+        #name = None
+        
+        #if 'name' in kwargs:
+        #    name = kwargs['name']
+        #    del(kwargs['name'])
+
+        #print args
+        #print kwargs
+        
+        #self.queue.append( _MethodNode(*args, name=name, **kwargs) )
+        self.queue.append( _MethodNode(*args, **kwargs) )
 
     def render(self):
         if not self.queue:
@@ -180,7 +219,10 @@ class ElementNode( _Node ):
 if coffeepot.JSLIB in ['jquery']:
     def make_method(m):
         def temp(self, *args, **kwargs):
-            self.add_method(m, args, kwargs)
+            #print args
+            #print kwargs
+            kwargs['name'] = m
+            self.add_method(*args, **kwargs)
             return self
         return temp
     
