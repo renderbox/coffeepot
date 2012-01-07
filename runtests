@@ -1,0 +1,4 @@
+nosetests --verbose
+\rm coffeepot/*.pyc
+\rm coffeepot/*/*.pyc
+\rm coffeepot/*/*/*.pyc
